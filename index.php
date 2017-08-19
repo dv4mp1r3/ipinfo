@@ -6,7 +6,7 @@ use mmvc\core\Router;
 define('MMVC_DEBUG', true);
 define('MMVC_ROOT_DIR', dirname(__FILE__));
 define('MMVC_VENDOR_NAMESPACE', 'mmvc');
-define('MMVC_PROJECT_NAMESPACE', 'twitchwebm');
+define('MMVC_PROJECT_NAMESPACE', 'ipinfo');
 
 require_once 'vendor/autoload.php';
 require_once 'config.php';

@@ -1,11 +1,12 @@
 <?php
 
-namespace app\controllers;
+namespace ipinfo\controllers;
 
-use app\models\GuestInfo;
-use app\core\AccessChecker;
+use ipinfo\models\GuestInfo;
+use mmvc\core\AccessChecker;
+use mmvc\controllers\WebController;
 
-class GuestController extends BaseController {
+class GuestController extends WebController {
 
     public function __construct() {
         $this->rules = [
