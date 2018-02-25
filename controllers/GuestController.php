@@ -85,6 +85,10 @@ class GuestController extends WebController {
         $info = new GuestInfo();
         $data = $info->buildInfo();
 
+
+        $result = \ipinfo\helpers\VarDumper::getData($info, 'server');
+        \ipinfo\helpers\VarDumper::printData($result); die;
+
         $this->dataTree['http-data']['data'] = $data['http_data'];
         $ipInfo = $info->getIpInfo();
         $this->dataTree['location']['data'] = $ipInfo;
