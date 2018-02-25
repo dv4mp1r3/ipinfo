@@ -17,7 +17,7 @@ function Guest()
         {
             var desc = navigator.plugins[i].description.length != 0
                     ? navigator.plugins[i].description
-                    : 'Empty description';
+                    : '';
             var value = navigator.plugins[i].name + ' (' + navigator.plugins[i].filename+')';
             str += this.htmlProperty(desc, value);
         }
@@ -67,10 +67,10 @@ function Guest()
             screenSize += '' + width + " x " + height;
         }
 
-        str += this.htmlProperty('Screen size', screenSize);
-        str += this.htmlProperty('Window size', this.windowSize());
-        str += this.htmlProperty('Pixel depth', screen.pixelDepth);
-        str += this.htmlProperty('Color depth', screen.colorDepth);
+        str += this.htmlProperty('screenSize', screenSize);
+        str += this.htmlProperty('windowSize', this.windowSize());
+        str += this.htmlProperty('pixelDepth', screen.pixelDepth);
+        str += this.htmlProperty('colorDepth', screen.colorDepth);
         str += this.htmlProperty('availLeft', screen.availLeft);
         str += this.htmlProperty('availTop', screen.availTop);
         str += this.htmlProperty('availWidth', screen.availWidth);
