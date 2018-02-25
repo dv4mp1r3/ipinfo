@@ -30,6 +30,12 @@ class GuestInfo extends BaseModel {
         'FORWARDED_FOR_IP',
         'HTTP_PROXY_CONNECTION'
     ];
+    
+    private $except_headers = [
+        'HTTP_X_SERVER_ADDR',
+        'HTTP_X_REAL_IP', 
+        'HTTP_UPGRADE_INSECURE_REQUESTS',
+    ];
 
     /**
      * Найденный заголовок о прокси
@@ -66,7 +72,7 @@ class GuestInfo extends BaseModel {
     public function getHttpHeaders() {
         $httpData = array();
         foreach ($_SERVER as $key => $v)
-            if (strpos(strtolower($key), 'http_') === 0)
+            if (strpos(strtoupper($key), 'HTTP_') === 0 && !in_array($key, $this->except_headers))
                 $httpData[htmlspecialchars($key)] = htmlspecialchars ($v);
 
         $this->data['http_data'] = $httpData;
