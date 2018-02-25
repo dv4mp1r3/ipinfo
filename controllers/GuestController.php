@@ -95,6 +95,7 @@ class GuestController extends WebController {
        
         $this->appendVariable('www_root', $this->getHttpRootPath());
         
+        $data['remote_ip']  = $info::getRemoteIp();
         $data['is_tor_used']   = $info->isTorUser();
         $data['is_proxy_used'] = $info->isProxyUsed();
         $data['proxy_header']  = $info->detectedProxyHeader;
