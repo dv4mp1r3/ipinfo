@@ -12,13 +12,13 @@ function Guest()
     this.plugins = function ()
     {
         var x = navigator.plugins.length;
-        var str = '';
+        var str = "    <b>array</b> <i>plugins (size="+x+")</i>\n";
         for (var i = 0; i < x; i++)
         {
             var desc = navigator.plugins[i].description.length != 0
                     ? navigator.plugins[i].description
-                    : 'Empty description';
-            var value = navigator.plugins[i].name + '<br />' + navigator.plugins[i].filename;
+                    : '';
+            var value = navigator.plugins[i].name + ' (' + navigator.plugins[i].filename+')';
             str += this.htmlProperty(desc, value);
         }
 
@@ -28,13 +28,14 @@ function Guest()
     this.navigator = function ()
     {
         var str = '';
-
+        var size = 0;
         for (property in navigator)
         {
             str += this.htmlProperty(property, navigator[property]);
+            size++;
         }
 
-        return str;
+        return "    <b>array</b> <i>navigator (size="+size+")</i>\n"+str;
     }
 
     this.flashVersion = function ()
@@ -46,8 +47,7 @@ function Guest()
             if (fv.major > 0)
             {
                 result = fv.major + '.' + fv.minor + ' r' + fv.release;
-            }
-            else
+            } else
             {
                 result = null;
             }
@@ -58,7 +58,7 @@ function Guest()
 
     this.screen = function ()
     {
-        var str = '';
+        var str = "    <b>array</b> <i>screen (size=8)</i>\n";
         var screenSize = '';
         if (screen.width)
         {
@@ -67,10 +67,10 @@ function Guest()
             screenSize += '' + width + " x " + height;
         }
 
-        str += this.htmlProperty('Screen size', screenSize);
-        str += this.htmlProperty('Window size', this.windowSize());
-        str += this.htmlProperty('Pixel depth', screen.pixelDepth);
-        str += this.htmlProperty('Color depth', screen.colorDepth);
+        str += this.htmlProperty('screenSize', screenSize);
+        str += this.htmlProperty('windowSize', this.windowSize());
+        str += this.htmlProperty('pixelDepth', screen.pixelDepth);
+        str += this.htmlProperty('colorDepth', screen.colorDepth);
         str += this.htmlProperty('availLeft', screen.availLeft);
         str += this.htmlProperty('availTop', screen.availTop);
         str += this.htmlProperty('availWidth', screen.availWidth);
@@ -95,29 +95,28 @@ function Guest()
 
     this.scripts = function ()
     {
-        var str = '';
-        str += this.htmlProperty('JavaScript', 'enabled');
+        var str = "    <b>array</b> <i>scripts (size=9)</i>\n";
+        str += this.htmlProperty('JavaScript', true);
 
-        var bEnabled = this.RTCPeerConnection != undefined ? 'enabled' : 'disabled';
+        var bEnabled = this.RTCPeerConnection != undefined ? true : false;
         str += this.htmlProperty('WebRTC', bEnabled);
 
-        bEnabled = typeof (window.ActiveXObject) == "undefined" ? 'disabled' : 'enabled';
+        bEnabled = typeof (window.ActiveXObject) == "undefined" ? false : true;
         str += this.htmlProperty('ActiveX', bEnabled);
 
-        var bEnabled = 'disabled';
+        var bEnabled = false;
         var vb = document.createElement('script');
         vb.type = "text/vbscript";
         try
         {
             vb.innerText = "Err.Raise";
-        }
-        catch (e)
+        } catch (e)
         {
-            bEnabled = 'enabled';
+            bEnabled = true;
         }
         str += this.htmlProperty('VBScript', bEnabled);
 
-        var bEnabled = navigator.javaEnabled() ? 'enabled' : 'disabled';
+        var bEnabled = navigator.javaEnabled() ? true : false;
         str += this.htmlProperty('Java', bEnabled);
 
         var type = 'application/x-shockwave-flash';
@@ -125,16 +124,16 @@ function Guest()
 
         if (mimeTypes && mimeTypes[type] && mimeTypes[type].enabledPlugin)
         {
-            str += this.htmlProperty('Flash (PPAPI)', 'enabled');
+            str += this.htmlProperty('Flash (PPAPI)', true);
         }
 
-        var bEnabled = typeof WebAssembly === 'object' ? 'enabled' : 'disabled';
+        var bEnabled = typeof WebAssembly === 'object' ? true : false;
         str += this.htmlProperty('WebAssembly', bEnabled);
 
-        var bEnabled = window.canRunAds === undefined ? 'enabled' : 'disabled';
+        var bEnabled = window.canRunAds === undefined ? true : false;
         str += this.htmlProperty('Adblock', bEnabled);
 
-        var bEnabled = window.console && (window.console.firebug || window.console.exception) ? 'enabled' : 'disabled';
+        var bEnabled = window.console && (window.console.firebug || window.console.exception) ? true : false;
         this.htmlProperty('Firebug', bEnabled);
 
         return str;
@@ -142,15 +141,46 @@ function Guest()
 
     this.htmlProperty = function (name, value)
     {
-        status = value == 'enabled' || value == 'disabled' ? ' ' + value : '';
-        return '<p class="name' + status + '">' + name + "</p>\n" + '<p class="value">' + value + "</p>\n";
+        var valueType = typeof(value);
+        var fontColor = '#888a85';
+        var addition = '';
+        switch(valueType)
+        {
+            case 'string':                
+                addition = "<i>(length="+value.length+")</i>";
+                fontColor = '#cc0000';
+                value = "'"+value+"'";
+                break;
+            case 'number':
+                if (parseFloat(value) !== NaN)
+                {
+                    fontColor = '#f57900';
+                }
+                else
+                {
+                    fontColor = '#4e9a06';
+                }
+                break;
+            case 'boolean':
+                if (value == true)
+                {
+                    fontColor = '#00cc00';
+                }
+                else
+                {
+                    fontColor = '#cc0000';
+                }
+                break;
+        }
+        //status = value == true || value == false ? ' ' + value : '';
+        return "        '"+name+"' <font color='#888a85'>=&gt;</font> <small>"+valueType+"</small> <font color='"+fontColor+"'>"+value+"</font>"+addition+"\n";
     }
 
     this.time = function ()
     {
         var date = new Date();
         var dateStr = date.toString();
-        
+
         var usertime = date.toLocaleString();
 
         var tzsregex = /\b(ACDT|ACST|ACT|ADT|AEDT|AEST|AFT|AKDT|AKST|AMST|AMT|ART|AST|AWDT|AWST|AZOST|AZT|BDT|BIOT|BIT|BOT|BRT|BST|BTT|CAT|CCT|CDT|CEDT|CEST|CET|CHADT|CHAST|CIST|CKT|CLST|CLT|COST|COT|CST|CT|CVT|CXT|CHST|DFT|EAST|EAT|ECT|EDT|EEDT|EEST|EET|EST|FJT|FKST|FKT|GALT|GET|GFT|GILT|GIT|GMT|GST|GYT|HADT|HAEC|HAST|HKT|HMT|HST|ICT|IDT|IRKT|IRST|IST|JST|KRAT|KST|LHST|LINT|MART|MAGT|MDT|MET|MEST|MIT|MSD|MSK|MST|MUT|MYT|NDT|NFT|NPT|NST|NT|NZDT|NZST|OMST|PDT|PETT|PHOT|PKT|PST|RET|SAMT|SAST|SBT|SCT|SGT|SLT|SST|TAHT|THA|UYST|UYT|VET|VLAT|WAT|WEDT|WEST|WET|WST|YAKT|YEKT)\b/gi;
@@ -173,10 +203,10 @@ function Guest()
             offset = "UTC" + (offset >= 0 ? "+" + offset : offset);
             timezone = timezonenames[offset];
         }
-        
+
         var dateLocal = dateStr.substring(0, dateStr.indexOf('(')) + '(' + timezone + ')';
-        
-        var str = '';
+
+        var str = "    <b>array</b> <i>time (size=5)</i>\n";
         str += this.htmlProperty('System', dateStr);
         str += this.htmlProperty('Local', dateLocal);
         str += this.htmlProperty('GMT', date.toGMTString());
@@ -352,31 +382,19 @@ $(document).ready(function () {
         return this.getTimezoneOffset() < this.stdTimezoneOffset();
     }
 
-    $('a').tooltip({placement: 'top'});
-
-    $(".toggle-button").click(function () {
-        var button = $(this);
-        var widgetName = button.attr('widgetName');
-        $('#' + widgetName).slideToggle("slow");
-
-        button.toggleClass(function () {
-            if ($(this).is('.fa fa-chevron-down')) {
-                return '.fa fa-chevron-up';
-            } else {
-                return '.fa fa-chevron-down';
-            }
-        })
-    });
-
     var g = new Guest();
-
-    $("#widget-plugins").empty().append(g.plugins());
-    $("#widget-scripts").empty().append(g.scripts());
-    $("#widget-screen").empty().append(g.screen());
-    $("#widget-navigator").empty().append(g.navigator());
-    $("#widget-time").append(g.time());
     
-    $('.value.language-js').append(g.language());
+    var pre = $('pre.ipinfo-vardumper');
+    if (pre == null)
+        return;
+    
+    pre.append("\n<b>array</b> <i>frontent_data (size=5)</i>\n");
+    pre.append(g.plugins());
+    pre.append(g.scripts());
+    pre.append(g.screen());
+    pre.append(g.navigator());
+    pre.append(g.time());
+    //pre.append(g.language());
 
 });
 

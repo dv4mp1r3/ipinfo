@@ -35,7 +35,12 @@ class VarDumper extends BaseModel
                 foreach ($data as $key => $value)
                 {
                     $type = gettype($value);
-                    $result[$key] = self::getData($value, $key, $type)[$key];
+                    $tmp = self::getData($value, $key, $type);
+                    if (!empty($tmp[$key])) {
+                        $result[$key] = $tmp[$key];
+                    } else if (count($tmp) > 1) {
+                        $result[$key] = $tmp;
+                    }
                 }
                 break;
             case 'resource':
@@ -74,11 +79,12 @@ class VarDumper extends BaseModel
     /**
      * Дамп информации о переменной
      * @param array $data результат выполнения getData
+     * @param string $name имя переменной 
      * @param int $level уровень вложенности
      * @throws \Exception выбрасывается если в параметр $data не передана ссылка на массив
      * @see VarDumper::getData()
      */
-    public static function printData(&$data, $level = 0)
+    public static function printData(&$data, $name = '', $level = 0)
     {
         if (!is_array($data))
         {
@@ -90,24 +96,20 @@ class VarDumper extends BaseModel
             echo "<pre class='ipinfo-vardumper' dir='ltr'>";
         }
 
-        echo "<b>array</b> <i>(size=".count($data).")</i>\n";
+        echo "<b>array</b> <i>$name (size=".count($data).")</i>\n";
 
         foreach ($data as $key => &$value)
         {
             echo self::printTabs($level);
-            if ($value['type'] === 'array')
-            {
-                self::printData($data, $level+1);
-            }
-            else
-            {
+            if (empty($value['type']) || $value['type'] === 'array') {
+                self::printData($value, $key, $level + 1);               
+            } else {
                 $valueColor = '#888a85';
                 $addition = '';
                 echo "'$key' ";
-                switch ($value['type'])
-                {
+                switch ($value['type']) {
                     case 'string':
-                        $addition = "<i>(length=".strlen($value['value']).")</i>";
+                        $addition = "<i>(length=" . strlen($value['value']) . ")</i>";
                         $value['value'] = "'{$value['value']}'";
                         $valueColor = '#cc0000';
                         break;
@@ -118,13 +120,11 @@ class VarDumper extends BaseModel
                     case 'integer':
                         $valueColor = '#4e9a06';
                         break;
-
                 }
                 echo "<font color='#888a85'>=&gt;</font>";
                 echo " <small>{$value['type']}</small> ";
                 echo "<font color='$valueColor'>{$value['value']}</font>";
                 echo "$addition\n";
-
             }
         }
 

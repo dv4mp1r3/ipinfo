@@ -83,27 +83,25 @@ class GuestController extends WebController {
     public function actionInfo()
     {
         $info = new GuestInfo();
-        $data = $info->buildInfo();
-
-
-        $result = \ipinfo\helpers\VarDumper::getData($info, 'server');
-        \ipinfo\helpers\VarDumper::printData($result); die;
-
-        $this->dataTree['http-data']['data'] = $data['http_data'];
         $ipInfo = $info->getIpInfo();
-        $this->dataTree['location']['data'] = $ipInfo;
+        $data = $info->buildInfo();
+              
+        $data['location'] = $ipInfo;
         if (is_array($ipInfo) && isset($ipInfo['latitude']) && isset($ipInfo['longitude']))
         { 
             $timezone = $info->getNearestTimezone($ipInfo['latitude'], $ipInfo['longitude']);
-            $this->dataTree['time']['data'] = ['Zone (geoip)' => $timezone];
+            $data['timezone'] = $timezone;
         }
        
-        $this->appendVariable('is_tor_user', $info->isTorUser());
         $this->appendVariable('www_root', $this->getHttpRootPath());
-        $this->appendVariable('proxy_is_used', $info->isProxyUsed());
-        $this->appendVariable('proxy_header', $info->detectedProxyHeader);
         
-        $this->appendVariable('data', $this->dataTree);
+        $data['remote_ip']  = $info::getRemoteIp();
+        $data['is_tor_used']   = $info->isTorUser();
+        $data['is_proxy_used'] = $info->isProxyUsed();
+        $data['proxy_header']  = $info->detectedProxyHeader;
+               
+        $data = \ipinfo\helpers\VarDumper::getData($data, 'server');
+        $this->appendVariable('data', $data);
         $this->render('info');       
     }
     
