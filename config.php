@@ -19,6 +19,7 @@ $config = ['db' =>
                     'user_hash' => '24wejdslkfjsdfh2k3h5qwd',
                 ],
             ],
+            'url' => ['delemiter' => '-'],
             'logpath' => MMVC_ROOT_DIR.DIRECTORY_SEPARATOR.'log'.DIRECTORY_SEPARATOR.'main.log',
             'timezone' => 'Etc/GMT-3',
             'route' => Router::ROUTE_TYPE_FRIENDLY,
