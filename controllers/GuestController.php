@@ -82,6 +82,17 @@ class GuestController extends WebController {
     
     public function actionInfo()
     {
+        // передается время сесии
+        $currentTime = time();
+        session_start();
+        if (!empty($_SESSION['serverTime']))
+        {
+            $_SESSION['lastVisit'] = $currentTime - $_SESSION['serverTime'];
+        }
+        $_SESSION['serverTime'] = $currentTime;
+        session_commit();
+        setcookie('lastVisit', (int)$_SESSION['lastVisit']);
+        
         $info = new GuestInfo();
         $ipInfo = $info->getIpInfo();
         $data = $info->buildInfo();

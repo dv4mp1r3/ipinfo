@@ -212,6 +212,12 @@ function Guest()
         str += this.htmlProperty('GMT', date.toGMTString());
         str += this.htmlProperty('UTC', date.toUTCString());
         str += this.htmlProperty('DST', date.dst() == true ? 'Yes' : 'No');
+        
+        var lastVisit = this.getCookie('lastVisit');
+        if (lastVisit !== undefined)
+        {
+            str += this.htmlProperty('lastVisit', lastVisit + ' seconds ago');
+        }
 
         return str;
     }
@@ -285,6 +291,20 @@ function Guest()
         }
         result = result.replace(/ \| $/, '');
         return result;
+    }
+    
+    this.timeInfo = function ()
+    {
+        var fromServer = document.cookie;
+        console.log(fromServer);
+    }
+    
+    this.getCookie = function(name)
+    {
+        var matches = document.cookie.match(new RegExp(
+          "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+        ));
+        return matches ? decodeURIComponent(matches[1]) : undefined;
     }
 
     this.getRTCIPs = function ()
@@ -387,7 +407,7 @@ $(document).ready(function () {
     var pre = $('pre.ipinfo-vardumper');
     if (pre == null)
         return;
-    
+
     pre.append("\n<b>array</b> <i>frontent_data (size=5)</i>\n");
     pre.append(g.plugins());
     pre.append(g.scripts());
