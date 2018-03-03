@@ -1,3 +1,60 @@
+function outputData(name)
+{
+    this.data = '';
+    this.count = 0;
+    this.name = name;
+    
+    /**
+     * 
+     * @returns {String}
+     */
+    this.toString = function()
+    {
+        return "    <b>array</b> <i>"+this.name+" (size="+this.count+")</i>\n"+this.data;
+    }
+    
+    /**
+     * 
+     * @param {String} name
+     * @param {type} value
+     * @returns {undefined}
+     */
+    this.addProperty = function (name, value)
+    {
+        var valueType = typeof (value);
+        var fontColor = '#888a85';
+        var addition = '';
+        switch (valueType)
+        {
+            case 'string':
+                addition = "<i>(length=" + value.length + ")</i>";
+                fontColor = '#cc0000';
+                value = "'" + value + "'";
+                break;
+            case 'number':
+                if (parseFloat(value) !== NaN)
+                {
+                    fontColor = '#f57900';
+                } else
+                {
+                    fontColor = '#4e9a06';
+                }
+                break;
+            case 'boolean':
+                if (value == true)
+                {
+                    fontColor = '#00cc00';
+                } else
+                {
+                    fontColor = '#cc0000';
+                }
+                break;
+        }
+        this.count++;
+        this.data += "        '" + name + "' <font color='#888a85'>=&gt;</font> <small>" + valueType + "</small> <font color='" + fontColor + "'>" + value + "</font>" + addition + "\n";
+    }
+}
+
 function Guest()
 {
     this.RTCPeerConnection = window.RTCPeerConnection
@@ -7,35 +64,33 @@ function Guest()
     this.userAgent = navigator.userAgent;
     this.os = navigator.platform;
     this.doNotTrack = navigator.doNotTrack;
-    this.localIPs = '';
+    this.localIPs = new outputData("WebRTC local IP's");
 
     this.plugins = function ()
     {
         var x = navigator.plugins.length;
-        var str = "    <b>array</b> <i>plugins (size="+x+")</i>\n";
+        var output = new outputData('plugins');
         for (var i = 0; i < x; i++)
         {
             var desc = navigator.plugins[i].description.length != 0
                     ? navigator.plugins[i].description
                     : '';
             var value = navigator.plugins[i].name + ' (' + navigator.plugins[i].filename+')';
-            str += this.htmlProperty(desc, value);
+            output.addProperty(desc, value);
         }
 
-        return str;
+        output.toString();
     }
 
     this.navigator = function ()
     {
-        var str = '';
-        var size = 0;
+        var output = new outputData('navigator');
         for (property in navigator)
         {
-            str += this.htmlProperty(property, navigator[property]);
-            size++;
+            output.addProperty(property, navigator[property]);
         }
 
-        return "    <b>array</b> <i>navigator (size="+size+")</i>\n"+str;
+        return output.toString();
     }
 
     this.flashVersion = function ()
@@ -58,7 +113,7 @@ function Guest()
 
     this.screen = function ()
     {
-        var str = "    <b>array</b> <i>screen (size=8)</i>\n";
+        var output = new outputData('screen');
         var screenSize = '';
         if (screen.width)
         {
@@ -67,16 +122,16 @@ function Guest()
             screenSize += '' + width + " x " + height;
         }
 
-        str += this.htmlProperty('screenSize', screenSize);
-        str += this.htmlProperty('windowSize', this.windowSize());
-        str += this.htmlProperty('pixelDepth', screen.pixelDepth);
-        str += this.htmlProperty('colorDepth', screen.colorDepth);
-        str += this.htmlProperty('availLeft', screen.availLeft);
-        str += this.htmlProperty('availTop', screen.availTop);
-        str += this.htmlProperty('availWidth', screen.availWidth);
-        str += this.htmlProperty('availHeight', screen.availHeight);
+        output.addProperty('screenSize', screenSize);
+        output.addProperty('windowSize', this.windowSize());
+        output.addProperty('pixelDepth', screen.pixelDepth);
+        output.addProperty('colorDepth', screen.colorDepth);
+        output.addProperty('availLeft', screen.availLeft);
+        output.addProperty('availTop', screen.availTop);
+        output.addProperty('availWidth', screen.availWidth);
+        output.addProperty('availHeight', screen.availHeight);
 
-        return str;
+        return output.toString();
     }
 
     this.windowSize = function ()
@@ -95,14 +150,10 @@ function Guest()
 
     this.scripts = function ()
     {
-        var str = "    <b>array</b> <i>scripts (size=9)</i>\n";
-        str += this.htmlProperty('JavaScript', true);
-
-        var bEnabled = this.RTCPeerConnection != undefined ? true : false;
-        str += this.htmlProperty('WebRTC', bEnabled);
-
-        bEnabled = typeof (window.ActiveXObject) == "undefined" ? false : true;
-        str += this.htmlProperty('ActiveX', bEnabled);
+        var output = new outputData('scripts');
+        output.addProperty('JavaScript', true);
+        output.addProperty('WebRTC', this.RTCPeerConnection != undefined);
+        output.addProperty('ActiveX', typeof (window.ActiveXObject) == "undefined");
 
         var bEnabled = false;
         var vb = document.createElement('script');
@@ -114,70 +165,29 @@ function Guest()
         {
             bEnabled = true;
         }
-        str += this.htmlProperty('VBScript', bEnabled);
-
-        var bEnabled = navigator.javaEnabled() ? true : false;
-        str += this.htmlProperty('Java', bEnabled);
+        output.addProperty('VBScript', bEnabled);
+        output.addProperty('Java', navigator.javaEnabled());
 
         var type = 'application/x-shockwave-flash';
         var mimeTypes = navigator.mimeTypes;
 
         if (mimeTypes && mimeTypes[type] && mimeTypes[type].enabledPlugin)
         {
-            str += this.htmlProperty('Flash (PPAPI)', true);
+            output.addProperty('Flash (PPAPI)', true);
         }
 
-        var bEnabled = typeof WebAssembly === 'object' ? true : false;
-        str += this.htmlProperty('WebAssembly', bEnabled);
+        output.addProperty('WebAssembly', typeof WebAssembly === 'object');
+        output.addProperty('Adblock', window.canRunAds === undefined);
 
-        var bEnabled = window.canRunAds === undefined ? true : false;
-        str += this.htmlProperty('Adblock', bEnabled);
+        var bEnabled = window.console && (window.console.firebug || window.console.exception);
+        output.addProperty('Firebug', bEnabled);
 
-        var bEnabled = window.console && (window.console.firebug || window.console.exception) ? true : false;
-        this.htmlProperty('Firebug', bEnabled);
-
-        return str;
-    }
-
-    this.htmlProperty = function (name, value)
-    {
-        var valueType = typeof(value);
-        var fontColor = '#888a85';
-        var addition = '';
-        switch(valueType)
-        {
-            case 'string':                
-                addition = "<i>(length="+value.length+")</i>";
-                fontColor = '#cc0000';
-                value = "'"+value+"'";
-                break;
-            case 'number':
-                if (parseFloat(value) !== NaN)
-                {
-                    fontColor = '#f57900';
-                }
-                else
-                {
-                    fontColor = '#4e9a06';
-                }
-                break;
-            case 'boolean':
-                if (value == true)
-                {
-                    fontColor = '#00cc00';
-                }
-                else
-                {
-                    fontColor = '#cc0000';
-                }
-                break;
-        }
-        //status = value == true || value == false ? ' ' + value : '';
-        return "        '"+name+"' <font color='#888a85'>=&gt;</font> <small>"+valueType+"</small> <font color='"+fontColor+"'>"+value+"</font>"+addition+"\n";
+        return output.toString();
     }
 
     this.time = function ()
     {
+        var output = new outputData('time');
         var date = new Date();
         var dateStr = date.toString();
 
@@ -206,20 +216,19 @@ function Guest()
 
         var dateLocal = dateStr.substring(0, dateStr.indexOf('(')) + '(' + timezone + ')';
 
-        var str = "    <b>array</b> <i>time (size=5)</i>\n";
-        str += this.htmlProperty('System', dateStr);
-        str += this.htmlProperty('Local', dateLocal);
-        str += this.htmlProperty('GMT', date.toGMTString());
-        str += this.htmlProperty('UTC', date.toUTCString());
-        str += this.htmlProperty('DST', date.dst() == true ? 'Yes' : 'No');
+        output.addProperty('System', dateStr);
+        output.addProperty('Local', dateLocal);
+        output.addProperty('GMT', date.toGMTString());
+        output.addProperty('UTC', date.toUTCString());
+        output.addProperty('DST', date.dst() == true ? 'Yes' : 'No');
         
         var lastVisit = this.getCookie('lastVisit');
         if (lastVisit !== undefined)
         {
-            str += this.htmlProperty('lastVisit', lastVisit + ' seconds ago');
+            output.addProperty('lastVisit', lastVisit + ' seconds ago');
         }
 
-        return str;
+        return output.toString();
     }
 
     function detect_lang_from_header(ua) {
@@ -371,7 +380,7 @@ function Guest()
             //remove duplicates
             if (ip_dups[ip_addr] === undefined)
             {
-                guest.localIPs += guest.htmlProperty('IP', ip_addr);
+                guest.localIPs.addProperty('IP', ip_addr);
                 console.log(ip_addr);
             }
 
@@ -431,25 +440,24 @@ $(document).ready(function () {
         return this.getTimezoneOffset() < this.stdTimezoneOffset();
     }
 
-    var g = new Guest();
-    
+    var g = new Guest();   
     var pre = $('pre.ipinfo-vardumper');
     if (pre == null)
         return;
-       
-    pre.append("\n<b>array</b> <i>frontent_data (size=6)</i>\n");
-    pre.append(g.plugins());
-    pre.append(g.scripts());
-    pre.append(g.screen());
-    pre.append(g.navigator());
-    pre.append(g.time());
+    
+    var methods = ['plugins', 'scripts', 'screen', 'navigator', 'time'];   
+    pre.append("\n<b>array</b> <i>frontent_data (size="+(methods.length+1)+")</i>\n");
+    for(var i in methods)
+    {
+        pre.append(eval("g."+methods[i]+"()"));
+    }
     
     new Fingerprint2().get(function(result, components) {
-        g.setCookie('fingerprint', result);
-        var str = '    <b>array</b> <i>fingerprintJS (size=2)</i>\n';      
-        str += g.htmlProperty('hash', result);   
-        str += g.htmlProperty('fingerPrints', g.getCookie('fingerPrints')); 
-        pre.append(str);
+        var output = new outputData('fingerprintJS');
+        g.setCookie('fingerprint', result);      
+        output.addProperty('hash', result);   
+        output.addProperty('fingerPrints', g.getCookie('fingerPrints')); 
+        pre.append(output.toString());
     });
     //pre.append(g.language());
 
