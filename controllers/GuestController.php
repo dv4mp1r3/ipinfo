@@ -7,69 +7,6 @@ use mmvc\core\AccessChecker;
 use mmvc\controllers\WebController;
 
 class GuestController extends WebController {
-    
-    protected $dataTree = [
-        'screen' => [
-            'caption' => 'Screen' , 
-            'icon' => 'fa-desktop',
-            'data' => [
-                'Screen size' => 'N/A',
-                'Window size' => 'N/A',
-                'Pixel depth' => 'N/A',
-                'Color depth' => 'N/A',
-                'availLeft' => 'N/A',
-                'availTop' => 'N/A',
-                'availWidth' => 'N/A',
-                'availHeight' => 'N/A',
-            ],
-        ],
-        'plugins' => [
-            'caption' => 'Plugins' , 
-            'icon' => 'fa-cube',
-        ],
-        'language' => [
-            'caption' => 'Language' , 
-            'icon' => 'fa-cube',
-            'data' => [
-                'Headers' => '',
-                'JavaScript' => '',
-                'Flash' => '',
-                'Java' => '',
-            ],
-        ],
-        'time' => [
-            'caption' => 'Time' , 
-            'icon' => 'fa-cube',
-        ],
-        'dns' => [
-            'caption' => 'Dns' , 
-            'icon' => 'fa-cube',
-        ],
-        'navigator' => [
-            'caption' => 'Navigator' , 
-            'icon' => 'fa-internet-explorer',
-        ],
-        'scripts' => [
-            'caption' => 'Scripts' , 
-            'icon' => 'fa-file-code-o',
-            'data' => [
-                'JavaScript' => 'disabled',
-                'WebRTC' => 'disabled',
-                'ActiveX' => 'disabled',
-                'VBScript' => 'disabled',
-                'Java' => 'disabled',
-                'WebAssembly' => 'disabled',
-            ],
-        ],
-        'http-data' => [
-            'caption' => 'HTTP data' , 
-            'icon' => 'fa-server',
-        ],
-        'location' => [
-            'caption' => 'Location' , 
-            'icon' => 'fa-globe',
-        ]
-    ];
 
     public function __construct() {
         $this->rules = [
