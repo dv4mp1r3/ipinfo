@@ -82,16 +82,30 @@ class GuestController extends WebController {
     
     public function actionInfo()
     {
-        // передается время сесии
         $currentTime = time();
         session_start();
-        if (!empty($_SESSION['serverTime']))
-        {
+        
+        if (!empty($_SESSION['fingerPrints'])) {
+            if (!in_array($_COOKIE['fingerprint'], $_SESSION['fingerPrints']))
+            {
+                array_push($_SESSION['fingerPrints'], $_COOKIE['fingerprint']);
+            }           
+        } else {
+            $_SESSION['fingerPrints'] = [$_COOKIE['fingerprint']];
+        }
+
+        if (!empty($_SESSION['visitCount'])) {
+            $_SESSION['visitCount'] ++;
+        } else {
+            $_SESSION['visitCount'] = 1;
+        }
+        if (!empty($_SESSION['serverTime'])) {
             $_SESSION['lastVisit'] = $currentTime - $_SESSION['serverTime'];
         }
         $_SESSION['serverTime'] = $currentTime;
         session_commit();
         setcookie('lastVisit', (int)$_SESSION['lastVisit']);
+        setcookie('fingerPrints', htmlspecialchars(implode("\n", $_SESSION['fingerPrints'])));
         
         $info = new GuestInfo();
         $ipInfo = $info->getIpInfo();
@@ -106,10 +120,11 @@ class GuestController extends WebController {
        
         $this->appendVariable('www_root', $this->getHttpRootPath());
         
-        $data['remote_ip']  = $info::getRemoteIp();
-        $data['is_tor_used']   = $info->isTorUser();
-        $data['is_proxy_used'] = $info->isProxyUsed();
-        $data['proxy_header']  = $info->detectedProxyHeader;
+        $data['visitCount']  = $_SESSION['visitCount'];
+        $data['remoteIP']  = $info::getRemoteIp();
+        $data['isTorUsed']   = $info->isTorUser();
+        $data['isProxyUsed'] = $info->isProxyUsed();
+        $data['proxyHeader']  = $info->detectedProxyHeader;
                
         $data = \ipinfo\helpers\VarDumper::getData($data, 'server');
         $this->appendVariable('data', $data);
