@@ -446,7 +446,7 @@ $(document).ready(function () {
     
     new Fingerprint2().get(function(result, components) {
         g.setCookie('fingerprint', result);
-        var str = '    <b>array</b> <i>fingerprintJS (size=1)</i>\n';      
+        var str = '    <b>array</b> <i>fingerprintJS (size=2)</i>\n';      
         str += g.htmlProperty('hash', result);   
         str += g.htmlProperty('fingerPrints', g.getCookie('fingerPrints')); 
         pre.append(str);
