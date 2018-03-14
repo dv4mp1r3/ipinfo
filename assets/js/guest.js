@@ -180,6 +180,10 @@ function Guest()
         output.addProperty('Adblock', window.canRunAds === undefined);
 
         var bEnabled = window.console && (window.console.firebug || window.console.exception);
+        if (bEnabled == undefined)
+        {
+            bEnabled = false;
+        } 
         output.addProperty('Firebug', bEnabled);
 
         return output.toString();
