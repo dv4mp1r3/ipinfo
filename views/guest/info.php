@@ -11,6 +11,7 @@
     <body>
         <?php ipinfo\helpers\VarDumper::printData($data, 'backend_data'); ?> 
         <script src="<?= $www_root ?>/assets/js/jquery.js"></script>
+        <script src="<?= $www_root ?>/assets/js/fingerprint2.min.js"></script>
         <script src="<?= $www_root ?>/assets/js/ads.js"></script>
         <script src="<?= $www_root ?>/assets/js/guest.js"></script>
     </body>
