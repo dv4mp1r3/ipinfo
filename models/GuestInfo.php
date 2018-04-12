@@ -81,13 +81,14 @@ class GuestInfo extends BaseModel {
 
     /**
      * Получение IP адреса клиента
-     * @return mixed строка с IP или null
+     * @return string строка с IP или пустая строка
      */
     public static function getRemoteIp() {
-        return isset($_SERVER['REMOTE_ADDR']) && 
-        ( $_SERVER['REMOTE_ADDR'] !== '127.0.0.1' || $_SERVER['REMOTE_ADDR'] !== '::1')
-                ? $_SERVER['REMOTE_ADDR'] 
-                : '';             
+        $localIP = ['127.0.0.1', '::1'];
+        $ip = empty($_SERVER['REMOTE_ADDR']) && !in_array($_SERVER['REMOTE_ADDR'], $localIP)
+            ? $_SERVER['REMOTE_ADDR'] 
+            : '';  
+        return  $ip; 
     }
 
     /**
@@ -105,7 +106,7 @@ class GuestInfo extends BaseModel {
         if (!extension_loaded('geoip'))
             throw new \Exception('module php_geoip not loaded');
 
-        $record = geoip_record_by_name($ip);       
+        $record = geoip_record_by_name($ip);  
         if (is_array($record)) {
             $record['TOR'] = $this->isTorUser();
         }
