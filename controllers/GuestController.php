@@ -20,15 +20,20 @@ class GuestController extends WebController {
     public function actionInfo()
     {
         $currentTime = time();
-        session_start();
-        
-        if (!empty($_SESSION['fingerPrints'])) {
-            if (!in_array($_COOKIE['fingerprint'], $_SESSION['fingerPrints']))
-            {
-                array_push($_SESSION['fingerPrints'], $_COOKIE['fingerprint']);
-            }           
-        } else {
-            $_SESSION['fingerPrints'] = [$_COOKIE['fingerprint']];
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+
+        if (array_key_exists('fingerPrints', $_COOKIE))
+        {
+            if (!empty($_SESSION['fingerPrints'])) {
+                if (!in_array($_COOKIE['fingerprint'], $_SESSION['fingerPrints']))
+                {
+                    array_push($_SESSION['fingerPrints'], $_COOKIE['fingerprint']);
+                }
+            } else {
+                $_SESSION['fingerPrints'] = [$_COOKIE['fingerprint']];
+            }
         }
 
         if (!empty($_SESSION['visitCount'])) {
