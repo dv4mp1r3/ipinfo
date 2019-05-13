@@ -11,6 +11,8 @@ use mmvc\models\BaseModel;
 class VarDumper extends BaseModel
 {
 
+    const KEY_VALUE = 'value';
+
     /**
      * Получение инфы о передаваемой переменной в виде массива varname ['type' => , 'value' => ]
      * @param mixed $data
@@ -46,13 +48,13 @@ class VarDumper extends BaseModel
             case 'resource':
                 $result[$name] = [
                     'type' => $type,
-                    'value' => (int)$data
+                    self::KEY_VALUE => (int)$data
                 ];
                 break;
             default:
                 $result[$name] = [
                     'type' => $type,
-                    'value' => $data
+                    self::KEY_VALUE => $data
                 ];
                 break;
         }
@@ -109,8 +111,8 @@ class VarDumper extends BaseModel
                 echo "'$key' ";
                 switch ($value['type']) {
                     case 'string':
-                        $addition = "<i>(length=" . strlen($value['value']) . ")</i>";
-                        $value['value'] = "'{$value['value']}'";
+                        $addition = "<i>(length=" . strlen($value[self::KEY_VALUE]) . ")</i>";
+                        $value[self::KEY_VALUE] = "'{$value[self::KEY_VALUE]}'";
                         $valueColor = '#cc0000';
                         break;
                     case 'float':
@@ -119,6 +121,8 @@ class VarDumper extends BaseModel
                         break;
                     case 'integer':
                         $valueColor = '#4e9a06';
+                        break;
+                    default:
                         break;
                 }
                 echo "<font color='#888a85'>=&gt;</font>";

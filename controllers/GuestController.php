@@ -8,6 +8,10 @@ use mmvc\controllers\WebController;
 
 class GuestController extends WebController {
 
+    const KEY_FP = 'fingerPrints';
+
+    const KEY_VISITS = 'visitCount';
+
     public function __construct() {
         $this->rules = [
             'info' => [
@@ -19,35 +23,46 @@ class GuestController extends WebController {
     
     public function actionInfo()
     {
+        $keyServerTime = 'serverTime';
+        $keyFingerprint = 'fingerprint';
+        $keyLastVisit = 'lastVisit';
         $currentTime = time();
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
 
-        if (array_key_exists('fingerPrints', $_COOKIE))
+        if (array_key_exists($keyFingerprint, $_COOKIE))
         {
-            if (!empty($_SESSION['fingerPrints'])) {
-                if (!in_array($_COOKIE['fingerprint'], $_SESSION['fingerPrints']))
+            if (!empty($_SESSION[self::KEY_FP])) {
+                if (!in_array($_COOKIE[$keyFingerprint], $_SESSION[self::KEY_FP]))
                 {
-                    array_push($_SESSION['fingerPrints'], $_COOKIE['fingerprint']);
+                    array_push($_SESSION[self::KEY_FP], $_COOKIE[$keyFingerprint]);
                 }
             } else {
-                $_SESSION['fingerPrints'] = [$_COOKIE['fingerprint']];
+                $_SESSION[self::KEY_FP] = [$_COOKIE[$keyFingerprint]];
             }
         }
 
-        if (!empty($_SESSION['visitCount'])) {
-            $_SESSION['visitCount'] ++;
+        if (!empty($_SESSION[self::KEY_VISITS])) {
+            $_SESSION[self::KEY_VISITS] ++;
         } else {
-            $_SESSION['visitCount'] = 1;
+            $_SESSION[self::KEY_VISITS] = 1;
         }
-        if (!empty($_SESSION['serverTime'])) {
-            $_SESSION['lastVisit'] = $currentTime - $_SESSION['serverTime'];
+        if (!empty($_SESSION[$keyServerTime])) {
+            $_SESSION[$keyLastVisit] = $currentTime - $_SESSION[$keyServerTime];
         }
         $_SESSION['serverTime'] = $currentTime;
         session_commit();
-        setcookie('lastVisit', (int)$_SESSION['lastVisit']);
-        setcookie('fingerPrints', htmlspecialchars(implode("\n", $_SESSION['fingerPrints'])));
+        if (array_key_exists($keyLastVisit, $_SESSION))
+        {
+            setcookie($keyLastVisit, (int)$_SESSION[$keyLastVisit]);
+        }
+
+        if (array_key_exists(self::KEY_FP, $_SESSION))
+        {
+            setcookie(self::KEY_FP, htmlspecialchars(implode("\n", $_SESSION[self::KEY_FP])));
+        }
+
         
         $info = new GuestInfo();
         $ipInfo = $info->getIpInfo();
@@ -62,7 +77,7 @@ class GuestController extends WebController {
        
         $this->appendVariable('www_root', $this->getHttpRootPath());
         
-        $data['visitCount']  = $_SESSION['visitCount'];
+        $data[self::KEY_VISITS]  = $_SESSION[self::KEY_VISITS];
         $data['remoteIP']  = $info::getRemoteIp();
         $data['isTorUsed']   = $info->isTorUser();
         $data['isProxyUsed'] = $info->isProxyUsed();
@@ -75,16 +90,17 @@ class GuestController extends WebController {
     
     public function  actionProxyport()
     {
-        $result = ['error' => 0, 'using' => false, 'port' => 0];
+        $keyUsing = 'using';
+        $result = ['error' => 0, $keyUsing => false, 'port' => 0];
         $ip = GuestInfo::getRemoteIp();
         try
         {
-            $result['using'] = GuestInfo::isProxyPortOpened($ip);
+            $result[$keyUsing] = GuestInfo::isProxyPortOpened($ip);
             $result['port'] = GuestInfo::$detectedProxyPort;
         } 
         catch (\Exception $ex) 
         {
-            $result['using'] = false;
+            $result[$keyUsing] = false;
             $result['error'] = $ex->getMessage();
         }
         

@@ -32,7 +32,7 @@ function outputData(name)
                 value = "'" + value + "'";
                 break;
             case 'number':
-                if (parseFloat(value) !== NaN)
+                if (!isNaN(parseFloat(value)))
                 {
                     fontColor = '#f57900';
                 } else
@@ -85,7 +85,7 @@ function Guest()
     this.navigator = function ()
     {
         var output = new outputData('navigator');
-        for (property in navigator)
+        for (var property in navigator)
         {
             output.addProperty(property, navigator[property]);
         }
@@ -115,8 +115,9 @@ function Guest()
     {
         var output = new outputData('screen');
         var screenSize = '';
-        if (screen.width)
-        {
+        var height;
+        var width;
+        if (screen.width) {
             width = (screen.width) ? screen.width : '';
             height = (screen.height) ? screen.height : '';
             screenSize += '' + width + " x " + height;
@@ -136,7 +137,7 @@ function Guest()
 
     this.windowSize = function ()
     {
-        w = window;
+        var w = window;
 
         if (w.innerWidth != null)
             return w.innerWidth + ' x ' + w.innerHeight;
@@ -179,7 +180,7 @@ function Guest()
         output.addProperty('WebAssembly', typeof WebAssembly === 'object');
         output.addProperty('Adblock', window.canRunAds === undefined);
 
-        var bEnabled = window.console && (window.console.firebug || window.console.exception);
+        bEnabled = window.console && (window.console.firebug || window.console.exception);
         if (bEnabled == undefined)
         {
             bEnabled = false;
@@ -236,7 +237,6 @@ function Guest()
     }
 
     function detect_lang_from_header(ua) {
-        var ua_orig = ua;
         var result = '';
         if (/\[(\w\w|\w\w-\w\w)\]/.test(ua.toLowerCase())) {
             if (ua_lang[RegExp.$1]) {
@@ -248,7 +248,7 @@ function Guest()
             result = 'en';
         } else {
             var chunks = ua.toLowerCase().split(/;|\)/);
-            for (i in chunks) {
+            for (var i in chunks) {
                 chunks[i] = chunks[i].replace('_', '-');
                 if (/^[ \w\-,]{0,} (\w\w|\w\w-\w\w)$/.test(chunks[i].toLowerCase())) {
                     if (ua_lang[RegExp.$1]) {
@@ -277,7 +277,6 @@ function Guest()
                 pub["lang_js"].push(window.navigator[lang_names[i]]);
             } catch (e) {
             }
-            ;
         }
         result = result.replace(/ \| $/, '');
         if (typeof (window.navigator['userAgent']) != "undefined")
@@ -285,13 +284,11 @@ function Guest()
                 lang_ua = detect_lang_from_header(window.navigator['userAgent']);
             } catch (e) {
             }
-        ;
         if (typeof (window.navigator['appVersion']) != "undefined")
             try {
                 lang_app = detect_lang_from_header(window.navigator['appVersion']);
             } catch (e) {
             }
-        ;
         if ((lang_ua == '' && lang_app == '') || (lang_ua != '' && lang_app != '')) {
             result = result ? result + " | " + lang_ua : lang_ua;
         } else {

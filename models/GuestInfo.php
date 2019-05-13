@@ -7,6 +7,8 @@ use mmvc\models\BaseModel;
 
 class GuestInfo extends BaseModel {
 
+    const KEY_REMOTE_ADDR = 'REMOTE_ADDR';
+
     private $data;
 
     /**
@@ -72,8 +74,13 @@ class GuestInfo extends BaseModel {
     public function getHttpHeaders() {
         $httpData = array();
         foreach ($_SERVER as $key => $v)
+        {
             if (strpos(strtoupper($key), 'HTTP_') === 0 && !in_array($key, $this->except_headers))
+            {
                 $httpData[htmlspecialchars($key)] = htmlspecialchars ($v);
+            }
+        }
+
 
         $this->data['http_data'] = $httpData;
         return $this->data['http_data'];
@@ -85,10 +92,9 @@ class GuestInfo extends BaseModel {
      */
     public static function getRemoteIp() {
         $localIP = ['127.0.0.1', '::1'];
-        $ip = empty($_SERVER['REMOTE_ADDR']) && !in_array($_SERVER['REMOTE_ADDR'], $localIP)
-            ? $_SERVER['REMOTE_ADDR'] 
-            : '';  
-        return  $ip; 
+        return empty($_SERVER[self::KEY_REMOTE_ADDR]) && !in_array($_SERVER[self::KEY_REMOTE_ADDR], $localIP)
+            ? $_SERVER[self::KEY_REMOTE_ADDR]
+            : '';
     }
 
     /**
@@ -100,11 +106,14 @@ class GuestInfo extends BaseModel {
     public function getIpInfo() {
         $ip = self::getRemoteIp();
         
-        if ($ip === null)
+        if ($ip === null) {
             throw new \Exception('can not to get client ip');
+        }
 
-        if (!extension_loaded('geoip'))
+
+        if (!extension_loaded('geoip')) {
             throw new \Exception('module php_geoip not loaded');
+        }
 
         $record = geoip_record_by_name($ip);  
         if (is_array($record)) {
@@ -138,10 +147,12 @@ class GuestInfo extends BaseModel {
      */
     public static function isProxyPortOpened($ip = null) {
         if ($ip === null) {
-            if (isset($_SERVER['REMOTE_ADDR']))
-                $ip = $_SERVER['REMOTE_ADDR'];
-            else
+            if (!isset($_SERVER[self::KEY_REMOTE_ADDR])) {
                 throw new \Exception('ip is empty or not set');
+            }
+            else {
+                $ip = $_SERVER[self::KEY_REMOTE_ADDR];
+            }
         }
 
         foreach (self::$proxyPorts as $port) {
@@ -182,7 +193,6 @@ class GuestInfo extends BaseModel {
                     $distance = (sin(deg2rad($latitude)) * sin(deg2rad($tz_lat))) + (cos(deg2rad($latitude)) * cos(deg2rad($tz_lat)) * cos(deg2rad($theta)));
                     $distance = acos($distance);
                     $distance = abs(rad2deg($distance));
-                    // echo '<br />'.$timezone_id.' '.$distance; 
 
                     if (!$time_zone || $tz_distance > $distance) {
                         $time_zone = $timezone_id;
@@ -197,8 +207,9 @@ class GuestInfo extends BaseModel {
 
     private function ReverseIPOctets($inputip) {
         $ipoc = explode(".", $inputip);
-        if (count($ipoc) !== 4)
+        if (count($ipoc) !== 4) {
             return '';
+        }
         return $ipoc[3] . "." . $ipoc[2] . "." . $ipoc[1] . "." . $ipoc[0];
     }
 
