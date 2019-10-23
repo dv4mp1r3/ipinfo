@@ -12,6 +12,10 @@ class GuestController extends WebController {
 
     const KEY_VISITS = 'visitCount';
 
+    const VIEW_NAME_WEB = 'web';
+    const VIEW_NAME_HTML = 'html';
+    const VIEW_NAME_CLI = 'cli';
+
     public function __construct() {
         $this->rules = [
             'info' => [
@@ -20,8 +24,38 @@ class GuestController extends WebController {
         ];
         parent::__construct();
     }
-    
-    public function actionInfo()
+
+    /**
+     * Подготовка данных для передачи во вьюху
+     * @return array
+     */
+    protected function collectData()
+    {
+        $this->updateSessionData();
+        $info = new GuestInfo();
+        $ipInfo = $info->getIpInfo();
+        $data = $info->buildInfo();
+
+        $data['location'] = $ipInfo;
+        if (is_array($ipInfo) && isset($ipInfo['latitude']) && isset($ipInfo['longitude']))
+        {
+            $timezone = $info->getNearestTimezone($ipInfo['latitude'], $ipInfo['longitude']);
+            $data['timezone'] = $timezone;
+        }
+        $data[self::KEY_VISITS]  = $_SESSION[self::KEY_VISITS];
+        $data['remoteIP']  = $info::getRemoteIp();
+        $data['isTorUsed']   = $info->isTorUser();
+        $data['isProxyUsed'] = $info->isProxyUsed();
+        $data['proxyHeader']  = $info->detectedProxyHeader;
+
+        $data = \ipinfo\helpers\VarDumper::getData($data, 'server');
+        return $data;
+    }
+
+    /**
+     * Обновление данных о сессии, либо создание при первом посещении
+     */
+    protected function updateSessionData()
     {
         $keyServerTime = 'serverTime';
         $keyFingerprint = 'fingerprint';
@@ -62,30 +96,44 @@ class GuestController extends WebController {
         {
             setcookie(self::KEY_FP, htmlspecialchars(implode("\n", $_SESSION[self::KEY_FP])));
         }
+    }
 
-        
-        $info = new GuestInfo();
-        $ipInfo = $info->getIpInfo();
-        $data = $info->buildInfo();
-              
-        $data['location'] = $ipInfo;
-        if (is_array($ipInfo) && isset($ipInfo['latitude']) && isset($ipInfo['longitude']))
-        { 
-            $timezone = $info->getNearestTimezone($ipInfo['latitude'], $ipInfo['longitude']);
-            $data['timezone'] = $timezone;
-        }
-       
-        $this->appendVariable('www_root', $this->getHttpRootPath());
-        
-        $data[self::KEY_VISITS]  = $_SESSION[self::KEY_VISITS];
-        $data['remoteIP']  = $info::getRemoteIp();
-        $data['isTorUsed']   = $info->isTorUser();
-        $data['isProxyUsed'] = $info->isProxyUsed();
-        $data['proxyHeader']  = $info->detectedProxyHeader;
-               
-        $data = \ipinfo\helpers\VarDumper::getData($data, 'server');
+    /**
+     * @param string $view
+     */
+    protected function renderByViewName($view)
+    {
+        $data = $this->collectData();
         $this->appendVariable('data', $data);
-        $this->render('info');       
+        if ($view === GuestController::VIEW_NAME_WEB)
+        {
+            $this->appendVariable('www_root', $this->getHttpRootPath());
+        }
+        $this->render($view);
+    }
+
+    /**
+     * html-страница со стилями и js (современные браузеры)
+     */
+    public function actionWeb()
+    {
+        $this->renderByViewName(GuestController::VIEW_NAME_WEB);
+    }
+
+    /**
+     * только html-страница (устаревшие браузеры)
+     */
+    public function actionHtml()
+    {
+        $this->renderByViewName(GuestController::VIEW_NAME_HTML);
+    }
+
+    /**
+     * форматирование для отображения в терминалах
+     */
+    public function actionCli()
+    {
+        $this->renderByViewName(GuestController::VIEW_NAME_CLI);
     }
     
     public function  actionProxyport()
