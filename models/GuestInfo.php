@@ -63,6 +63,7 @@ class GuestInfo extends BaseModel {
     const FSOCKOPEN_TIMEOUT_SEC = 5;
 
     public function __construct() {
+        parent::__construct();
         $this->data = array();
     }
 
@@ -100,7 +101,7 @@ class GuestInfo extends BaseModel {
     /**
      * Получение информации об IP клиента через php_geoip
      * @return array
-     * @throws Exception выбрасывается если нельзя определить IP клиента
+     * @throws \Exception выбрасывается если нельзя определить IP клиента
      * или если php-geoip не загружен
      */
     public function getIpInfo() {
@@ -134,6 +135,7 @@ class GuestInfo extends BaseModel {
                 return true;
             }
         }
+        return false;
     }
 
     /**
