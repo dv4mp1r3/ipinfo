@@ -105,22 +105,12 @@ class GuestInfo extends BaseModel {
      * или если php-geoip не загружен
      */
     public function getIpInfo() {
-        $ip = self::getRemoteIp();
-        
-        if ($ip === null) {
+        $ip = GeoIp::getRemoteIp();
+        if ($ip === null || $ip === '') {
             throw new \Exception('can not to get client ip');
         }
 
-
-        if (!extension_loaded('geoip')) {
-            throw new \Exception('module php_geoip not loaded');
-        }
-
-        $record = geoip_record_by_name($ip);  
-        if (is_array($record)) {
-            $record['TOR'] = $this->isTorUser();
-        }
-        return $record;
+        return (new GeoIp())->toArray($ip);
     }
 
     /**
@@ -205,27 +195,6 @@ class GuestInfo extends BaseModel {
             return $time_zone;
         }
         return 'unknown';
-    }
-
-    private function ReverseIPOctets($inputip) {
-        $ipoc = explode(".", $inputip);
-        if (count($ipoc) !== 4) {
-            return '';
-        }
-        return $ipoc[3] . "." . $ipoc[2] . "." . $ipoc[1] . "." . $ipoc[0];
-    }
-
-    /**
-     * Определение использования TOR клиентом
-     * @return boolean
-     */
-    public function isTorUser() {
-        $res = gethostbyname($this->ReverseIPOctets(self::getRemoteIp()) .
-                        "." . $_SERVER['SERVER_PORT'] .
-                        "." . $this->ReverseIPOctets($_SERVER['SERVER_ADDR']) .
-                        ".ip-port.exitlist.torproject.org") == "127.0.0.2";
-        
-        return $res !== false ? 'Yes' : 'No';
     }
 
 }

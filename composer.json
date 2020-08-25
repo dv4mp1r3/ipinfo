@@ -1,5 +1,6 @@
 {
-    "require": {
-            "dv4mp1r3/mmvc" : "dev-master"
-    }
+  "require": {
+    "dv4mp1r3/mmvc": "dev-master",
+    "geoip2/geoip2": "~2.0"
+  }
 }

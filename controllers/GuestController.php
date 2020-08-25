@@ -3,6 +3,8 @@
 namespace ipinfo\controllers;
 
 use ipinfo\models\GuestInfo;
+use ipinfo\models\GeoIp;
+use ipinfo\models\TorDetect;
 use mmvc\core\AccessChecker;
 use mmvc\controllers\WebController;
 
@@ -28,6 +30,7 @@ class GuestController extends WebController {
     /**
      * Подготовка данных для передачи во вьюху
      * @return array
+     * @throws \Exception
      */
     protected function collectData()
     {
@@ -43,8 +46,9 @@ class GuestController extends WebController {
             $data['timezone'] = $timezone;
         }
         $data[self::KEY_VISITS]  = $_SESSION[self::KEY_VISITS];
-        $data['remoteIP']  = $info::getRemoteIp();
-        $data['isTorUsed']   = $info->isTorUser();
+        $remoteIp = GeoIp::getRemoteIp();
+        $data['remoteIP']  = $remoteIp;
+        $data['isTorUsed'] = TorDetect::isTorUser($remoteIp) ? 'Yes' : 'No';
         $data['isProxyUsed'] = $info->isProxyUsed();
         $data['proxyHeader']  = $info->detectedProxyHeader;
 
@@ -140,7 +144,7 @@ class GuestController extends WebController {
     {
         $keyUsing = 'using';
         $result = ['error' => 0, $keyUsing => false, 'port' => 0];
-        $ip = GuestInfo::getRemoteIp();
+        $ip = GeoIp::getRemoteIp();
         try
         {
             $result[$keyUsing] = GuestInfo::isProxyPortOpened($ip);

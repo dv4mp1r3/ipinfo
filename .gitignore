@@ -5,6 +5,7 @@
 /nbproject
 /log/main.log
 composer.lock
+config.php
 *.swp
 #*#
 .#*
