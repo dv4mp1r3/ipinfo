@@ -35,22 +35,13 @@ class GuestController extends WebController {
     protected function collectData()
     {
         $this->updateSessionData();
-        $info = new GuestInfo();
-        $ipInfo = $info->getIpInfo();
-        $data = $info->buildInfo();
-
-        $data['location'] = $ipInfo;
-        if (is_array($ipInfo) && isset($ipInfo['latitude']) && isset($ipInfo['longitude']))
-        {
-            $timezone = $info->getNearestTimezone($ipInfo['latitude'], $ipInfo['longitude']);
-            $data['timezone'] = $timezone;
-        }
-        $data[self::KEY_VISITS]  = $_SESSION[self::KEY_VISITS];
         $remoteIp = GeoIp::getRemoteIp();
-        $data['remoteIP']  = $remoteIp;
+        $data = (new GuestInfo())->toArray();
         $data['isTorUsed'] = TorDetect::isTorUser($remoteIp) ? 'Yes' : 'No';
-        $data['isProxyUsed'] = $info->isProxyUsed();
-        $data['proxyHeader']  = $info->detectedProxyHeader;
+        $data[self::KEY_VISITS]  = $_SESSION[self::KEY_VISITS];
+        $data['remoteIP']  = $remoteIp;
+        $data['isProxyUsed'] = $data['isProxyUsed'] ? 'Yes' : 'No';
+        $data['location'] = (new GeoIp($remoteIp))->toArray();
 
         $data = \ipinfo\helpers\VarDumper::getData($data, 'server');
         return $data;
@@ -104,6 +95,7 @@ class GuestController extends WebController {
 
     /**
      * @param string $view
+     * @throws \Exception
      */
     protected function renderByViewName($view)
     {
