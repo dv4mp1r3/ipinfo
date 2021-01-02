@@ -32,7 +32,6 @@ class GeoIp implements IConvertibleToArray
     }
 
     /**
-     * @param string $ip
      * @return array
      * @throws AddressNotFoundException
      * @throws InvalidDatabaseException
