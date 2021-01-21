@@ -38,16 +38,24 @@ class GeoIp implements IConvertibleToArray
      */
     public function toArray() : array
     {
+        $record = [
+            'city' => '',
+            'latitude' => '',
+            'longitude' => '',
+            'provider' => '',
+            'timezone' => '',
+        ];
+        if ($this->ip === '') {
+            return $record;
+        }
         $city = $this->city->city($this->ip);
         $asn =  $this->asn->asn($this->ip);
+        $record['city'] = $city->city->name;
+        $record['latitude'] = $city->location->latitude;
+        $record['longitude'] = $city->location->longitude;
+        $record['provider'] = $asn->autonomousSystemOrganization;
+        $record['timezone'] = $this->getNearestTimezone($city->location->latitude, $city->location->longitude);
 
-        $record = [
-            'city' => $city->city->name,
-            'latitude' => $city->location->latitude,
-            'longitude' => $city->location->longitude,
-            'provider' => $asn->autonomousSystemOrganization,
-            'timezone' => $this->getNearestTimezone($city->location->latitude, $city->location->longitude),
-        ];
         return $record;
     }
 
